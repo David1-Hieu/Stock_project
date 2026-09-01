@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">FOLLOW-UP PIPELINE</p><h1>Watchlist</h1><p>Theo dõi cổ phiếu qua snapshot cuối phiên. Cột TB Close 5D là trung bình giá đóng cửa của 5 phiên giao dịch gần nhất.</p></div><form id="watchAddForm" class="inline-form"><input id="watchSymbol" placeholder="HPG" maxlength="12"><button class="button">+ Thêm mã</button></form></section>
+<section class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Mã</th><th>Ngày thêm</th><th>Close gần nhất</th><th>TB Close 5D</th><th>RS vs VNIndex</th><th>Final Score</th><th>System Action</th><th></th></tr></thead><tbody id="watchBody"></tbody></table></div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/watchlist_page.js') }}"></script>{% endblock %}

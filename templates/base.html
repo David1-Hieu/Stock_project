@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title }} · Stock Analyze</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+</head>
+<body data-page="{{ page or '' }}" data-symbol="{{ symbol or '' }}">
+  <header class="topbar">
+    <a class="brand" href="/">Stock Analyze <span>v3</span></a>
+    <nav class="navlinks">
+      <a class="{{ 'active' if page=='dashboard' else '' }}" href="/">Dashboard</a>
+      <a class="{{ 'active' if page=='screener' else '' }}" href="/screener">Screener</a>
+      <a class="{{ 'active' if page=='analysis' else '' }}" href="/analysis">Analysis</a>
+      <a class="{{ 'active' if page=='watchlist' else '' }}" href="/watchlist">Watchlist</a>
+      <a class="{{ 'active' if page=='portfolio' else '' }}" href="/portfolio">Portfolio</a>
+      <a class="{{ 'active' if page=='ai_reports' else '' }}" href="/ai-reports">AI Reports</a>
+      <a class="{{ 'active' if page=='settings' else '' }}" href="/settings">Settings</a>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'components/chatbot.html' %}
+  <div id="toast" class="toast" hidden></div>
+  <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

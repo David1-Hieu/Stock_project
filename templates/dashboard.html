@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading">
+  <div><p class="eyebrow">MARKET COMMAND CENTER</p><h1>Dashboard</h1><p>Tổng quan ngắn gọn; chi tiết được tách sang từng trang.</p></div>
+  <button id="runMonitor" class="button secondary">Chạy EOD Monitor thủ công</button>
+</section>
+<div class="metric-grid">
+  <article class="metric-card"><span>VNINDEX</span><strong id="vnindexValue">—</strong><small id="vnindexDate">Chưa có snapshot</small></article>
+  <article class="metric-card"><span>VN30</span><strong id="vn30Value">—</strong><small id="vn30Date">Chưa có snapshot</small></article>
+  <article class="metric-card"><span>Watchlist</span><strong id="watchCount">0</strong><small>Mã đang theo dõi</small></article>
+  <article class="metric-card"><span>Portfolio</span><strong id="portfolioCount">0</strong><small>Vị thế đang lưu</small></article>
+</div>
+<div class="two-column">
+  <section class="panel"><div class="panel-head"><h2>Top Screening</h2><a href="/screener">Mở Screener →</a></div><div id="topStocks" class="list-stack loading-text">Đang tải...</div></section>
+  <section class="panel"><div class="panel-head"><h2>Recommendation gần nhất</h2><a href="/ai-reports">Xem lịch sử →</a></div><div id="recentRecommendations" class="list-stack loading-text">Đang tải...</div></section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard_page.js') }}"></script>{% endblock %}

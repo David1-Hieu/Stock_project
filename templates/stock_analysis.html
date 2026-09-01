@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading analysis-heading">
+  <div>
+    <p class="eyebrow">STOCK ANALYSIS</p>
+    <h1>Phân tích cổ phiếu <span class="analysis-symbol-title">{{ symbol }}</span></h1>
+    <p>Trang phân tích riêng, giữ luồng phân tích kỹ thuật và cơ bản của dự án gốc nhưng trình bày rõ ràng hơn.</p>
+  </div>
+  <div class="button-row">
+    <button id="addCurrentWatch" class="button secondary">+ Watchlist</button>
+    <button id="refreshAnalysis" class="button">Làm mới dữ liệu</button>
+  </div>
+</section>
+
+<section class="panel analysis-search-panel">
+  <form id="analysisSymbolForm" class="analysis-symbol-form">
+    <div>
+      <label for="analysisSymbolInput">Mã cổ phiếu</label>
+      <div class="analysis-symbol-controls">
+        <input id="analysisSymbolInput" value="{{ symbol }}" maxlength="12" autocomplete="off" spellcheck="false" aria-label="Mã cổ phiếu">
+        <button class="button" type="submit">Phân tích</button>
+      </div>
+    </div>
+    <p class="subtle compact">Nhập mã như FPT, HPG, MBB... Dữ liệu kỹ thuật và cơ bản được tải trực tiếp từ các module gốc <code>technical.py</code> và <code>fundamental.py</code>.</p>
+  </form>
+</section>
+
+<div id="analysisStatus" class="analysis-status" hidden></div>
+<div id="scoreStrip" class="metric-grid analysis-score-strip"></div>
+
+<section class="panel analysis-main-panel">
+  <div class="tabbar analysis-tabbar" role="tablist">
+    <button class="tab active" data-tab="overview" type="button">Tổng quan</button>
+    <button class="tab" data-tab="technical" type="button">Phân tích kỹ thuật</button>
+    <button class="tab" data-tab="fundamental" type="button">Phân tích cơ bản</button>
+    <button class="tab" data-tab="monitor" type="button">Theo dõi 5 phiên</button>
+    <button class="tab" data-tab="ai" type="button">AI Analysis</button>
+  </div>
+
+  <div id="analysisLoading" class="analysis-loading" hidden>
+    <div class="loading-spinner"></div>
+    <div>
+      <strong>Đang tải dữ liệu {{ symbol }}...</strong>
+      <p>Đang lấy dữ liệu kỹ thuật và báo cáo tài chính.</p>
+    </div>
+  </div>
+
+  <div id="tab-overview" class="tab-content active"></div>
+  <div id="tab-technical" class="tab-content"></div>
+  <div id="tab-fundamental" class="tab-content"></div>
+  <div id="tab-monitor" class="tab-content"></div>
+  <div id="tab-ai" class="tab-content"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>window.CURRENT_SYMBOL={{ symbol|tojson }};</script>
+<script src="{{ url_for('static', filename='js/analysis_page.js') }}"></script>
+{% endblock %}

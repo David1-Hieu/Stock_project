@@ -1,0 +1,56 @@
+{
+  "version": "2.0",
+  "weights": {
+    "fundamental": 0.30,
+    "valuation": 0.25,
+    "technical": 0.25,
+    "risk": 0.20
+  },
+  "grades": {
+    "A": 80,
+    "B": 65,
+    "C": 50,
+    "D": 0
+  },
+  "hard_filters": {
+    "enabled": true,
+    "require_positive_eps": true,
+    "require_positive_net_income": true,
+    "require_minimum_data": true,
+    "minimum_available_components": 3
+  },
+  "industry_profiles": {
+    "BANK": {
+      "pe_weight": 0.25,
+      "pb_weight": 0.75,
+      "pe_good": 10,
+      "pe_fair": 15,
+      "pb_good": 1.5,
+      "pb_fair": 2.2
+    },
+    "SECURITIES": {
+      "pe_weight": 0.40,
+      "pb_weight": 0.60,
+      "pe_good": 12,
+      "pe_fair": 18,
+      "pb_good": 1.8,
+      "pb_fair": 2.8
+    },
+    "REAL_ESTATE": {
+      "pe_weight": 0.30,
+      "pb_weight": 0.70,
+      "pe_good": 12,
+      "pe_fair": 20,
+      "pb_good": 1.5,
+      "pb_fair": 2.5
+    },
+    "DEFAULT": {
+      "pe_weight": 0.65,
+      "pb_weight": 0.35,
+      "pe_good": 12,
+      "pe_fair": 20,
+      "pb_good": 2.0,
+      "pb_fair": 3.5
+    }
+  }
+}

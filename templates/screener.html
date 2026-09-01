@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">MULTI-FACTOR RANKING</p><h1>Stock Screener</h1><p>Fundamental · Valuation · Technical · Risk.</p></div><button id="reloadScreening" class="button">Tải ranking mới nhất</button></section>
+<section class="panel table-panel">
+  <div id="screeningMeta" class="subtle">Đang đọc batch_results...</div>
+  <div class="table-wrap"><table><thead><tr><th>#</th><th>Mã</th><th>Final</th><th>Fund.</th><th>Valuation</th><th>Technical</th><th>Risk</th><th>Grade</th><th>Hành động</th></tr></thead><tbody id="screeningBody"></tbody></table></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/screener_page.js') }}"></script>{% endblock %}

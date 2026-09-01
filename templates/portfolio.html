@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">POSITIONS</p><h1>Portfolio Monitor</h1><p>Portfolio tách riêng khỏi Watchlist để phân biệt “quan tâm” và “đang sở hữu”.</p></div></section>
+<section class="panel form-panel"><form id="holdingForm" class="holding-form"><input id="holdingSymbol" placeholder="Mã" required><input id="holdingQty" type="number" step="any" min="0" placeholder="Số lượng" required><input id="holdingAvg" type="number" step="any" min="0" placeholder="Giá vốn" required><button class="button">Lưu vị thế</button></form></section>
+<section class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Mã</th><th>SL</th><th>Giá vốn</th><th>Giá gần nhất</th><th>P/L %</th><th>Market Value</th><th></th></tr></thead><tbody id="portfolioBody"></tbody></table></div></section>
+<section class="panel"><div class="panel-head"><h2>Ollama Portfolio Overview</h2><button id="portfolioAI" class="button secondary">Tạo nhận định</button></div><pre id="portfolioAIResult" class="analysis-output">Chưa chạy.</pre></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/portfolio_page.js') }}"></script>{% endblock %}

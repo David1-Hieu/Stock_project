@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo Phân tích {{ symbol }} | Financial Terminal</title>
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    @page { size: A4; margin: 15mm; }
+    
+    :root {
+      /* Theme colors (Tech & Stock Market Dark Mode) */
+      --bg-main: #060913;
+      --bg-surface: #0c1020;
+      --bg-card: #121832;
+      --bg-card-hover: #182042;
+      
+      --border-cyan: rgba(0, 242, 254, 0.2);
+      --border-dim: rgba(255, 255, 255, 0.07);
+      --border-glow: rgba(0, 242, 254, 0.4);
+      
+      --cyan: #00f2fe;
+      --blue: #4facfe;
+      --purple: #8a2be2;
+      
+      --bullish: #00e676;
+      --bullish-bg: rgba(0, 230, 118, 0.08);
+      --bearish: #ff1744;
+      --bearish-bg: rgba(255, 23, 68, 0.08);
+      --caution: #ff9100;
+      --caution-bg: rgba(255, 145, 0, 0.08);
+      --neutral: #94a3b8;
+      --neutral-bg: rgba(148, 163, 184, 0.08);
+      
+      --text-main: #f8fafc;
+      --text-dim: #cbd5e1;
+      --text-muted: #64748b;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Layout Container */
+    .page-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-dim);
+      border-right: 1px solid var(--border-dim);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      min-height: 100vh;
+    }
+    
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(6, 9, 19, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-dim);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-glow {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      border: 1px solid var(--cyan);
+      padding: 4px 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+    }
+    
+    .logo-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    
+    .btn-print {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #05070f;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-print:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);
+    }
+    
+    /* Sleek Stock Ticker Header */
+    .ticker-header {
+      padding: 32px 40px;
+      background: linear-gradient(180deg, rgba(18, 24, 50, 0.6) 0%, rgba(12, 16, 32, 0) 100%);
+      border-bottom: 1px solid var(--border-dim);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 24px;
+    }
+    
+    .ticker-badge {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .ticker-sym {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      color: #fff;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    
+    .ticker-company {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+    
+    .ticker-stats {
+      display: flex;
+      gap: 32px;
+      justify-content: flex-start;
+      padding-left: 24px;
+      border-left: 1px solid var(--border-dim);
+    }
+    
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    
+    .stat-value.trend-up { color: var(--bullish); }
+    .stat-value.trend-down { color: var(--bearish); }
+    .stat-value.trend-sideway { color: var(--caution); }
+    
+    .header-meta {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .header-meta strong {
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    /* Main Content */
+    .main-content {
+      padding: 40px;
+    }
+    
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      margin-top: 12px;
+    }
+    
+    .section-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+      margin: 0;
+      background: linear-gradient(135deg, #fff, var(--text-dim));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .section-header-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-cyan), transparent);
+    }
+    
+    /* Cards */
+    .cyber-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .cyber-card:hover {
+      border-color: rgba(0, 242, 254, 0.25);
+      box-shadow: 0 12px 35px rgba(0, 242, 254, 0.05);
+      transform: translateY(-2px);
+    }
+    
+    .cyber-card.ai-box {
+      border-left: 3px solid var(--cyan);
+      background: linear-gradient(135deg, rgba(18, 24, 50, 0.9) 0%, rgba(12, 16, 32, 0.9) 100%);
+    }
+    
+    .cyber-card.recommendation-box {
+      margin-top: 16px;
+      padding: 28px;
+    }
+    
+    .cyber-card.recommendation-box.positive {
+      border-left: 4px solid var(--bullish);
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.04) 0%, rgba(18, 24, 50, 0.6) 100%);
+    }
+    
+    .cyber-card.recommendation-box.caution {
+      border-left: 4px solid var(--caution);
+      background: linear-gradient(135deg, rgba(255, 145, 0, 0.04) 0%, rgba(18, 24, 50, 0.6) 100%);
+    }
+    
+    .cyber-card.recommendation-box.negative {
+      border-left: 4px solid var(--bearish);
+      background: linear-gradient(135deg, rgba(255, 23, 68, 0.04) 0%, rgba(18, 24, 50, 0.6) 100%);
+    }
+    
+    .recommendation-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    .recommendation-title.positive { color: var(--bullish); }
+    .recommendation-title.caution { color: var(--caution); }
+    .recommendation-title.negative { color: var(--bearish); }
+    
+    /* Exec Summary Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .metric-box {
+      background: rgba(6, 9, 19, 0.5);
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .metric-box-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .metric-box-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 8px;
+    }
+    
+    .metric-box-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    /* Interactive Cyber Progress Ring for Score */
+    .score-container {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      background: rgba(6, 9, 19, 0.4);
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .score-circle-cyber {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: conic-gradient(
+        {% if score >= 70 %}
+          var(--bullish) calc({{ score }} * 1%),
+        {% elif score >= 45 %}
+          var(--caution) calc({{ score }} * 1%),
+        {% else %}
+          var(--bearish) calc({{ score }} * 1%),
+        {% endif %}
+        rgba(255,255,255,0.06) 0
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.05);
+    }
+    
+    .score-circle-cyber::before {
+      content: '';
+      position: absolute;
+      width: 94px;
+      height: 94px;
+      border-radius: 50%;
+      background: var(--bg-card);
+    }
+    
+    .score-circle-inner {
+      position: relative;
+      text-align: center;
+      z-index: 2;
+    }
+    
+    .score-circle-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+    
+    .score-circle-grade {
+      font-size: 11px;
+      color: var(--cyan);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+    }
+    
+    .score-detail {
+      flex: 1;
+    }
+    
+    .score-summary-txt {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    
+    /* Grid Two-Column split */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    /* Markdown AI Response Formatting */
+    .markdown-ai-body h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      color: #fff;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 4px;
+    }
+    .markdown-ai-body h3:first-of-type { margin-top: 0; }
+    
+    .markdown-ai-body p {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      margin: 0 0 14px;
+    }
+    
+    .markdown-ai-body ul, .markdown-ai-body ol {
+      padding-left: 20px;
+      margin: 0 0 16px;
+    }
+    
+    .markdown-ai-body li {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    
+    .markdown-ai-body blockquote {
+      margin: 16px 0;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.02);
+      border-left: 4px solid var(--cyan);
+      border-radius: 4px;
+      color: var(--cyan);
+      font-style: italic;
+    }
+    
+    /* Terminal Tables */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      background: rgba(6, 9, 19, 0.4);
+      margin: 16px 0 24px;
+    }
+    
+    .terminal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    
+    .terminal-table th {
+      background: rgba(18, 24, 50, 0.8);
+      font-family: 'Space Grotesk', sans-serif;
+      color: #fff;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+    
+    .terminal-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-dim);
+      color: var(--text-dim);
+    }
+    
+    .terminal-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .terminal-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+    }
+    
+    .terminal-table td.number, .terminal-table th.number {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: right;
+    }
+    
+    .terminal-table td.status {
+      font-weight: 700;
+    }
+    
+    .terminal-table tr.highlight-row td {
+      background: rgba(0, 242, 254, 0.03);
+    }
+    
+    /* Sensor Indicators (LED Badges) */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .status-badge.positive { background: var(--bullish-bg); color: var(--bullish); }
+    .status-badge.negative { background: var(--bearish-bg); color: var(--bearish); }
+    .status-badge.neutral { background: var(--neutral-bg); color: var(--neutral); }
+    .status-badge.caution { background: var(--caution-bg); color: var(--caution); }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+      background-color: currentColor;
+    }
+    
+    /* Hardware signal grid */
+    .signal-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    
+    .signal-led {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: rgba(6, 9, 19, 0.6);
+      border: 1px solid var(--border-dim);
+    }
+    
+    .signal-led.positive { border-color: rgba(0, 230, 118, 0.3); color: var(--bullish); }
+    .signal-led.negative { border-color: rgba(255, 23, 68, 0.3); color: var(--bearish); }
+    
+    /* Balance Stats */
+    .balance-stats-box {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .balance-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(6, 9, 19, 0.4);
+      border: 1px solid var(--border-dim);
+    }
+    
+    .balance-stat-name {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    
+    .balance-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+    }
+    
+    /* System Fallback Warning Banner */
+    .system-banner {
+      background: var(--caution-bg);
+      border: 1px solid rgba(255, 145, 0, 0.3);
+      padding: 12px 18px;
+      border-radius: 8px;
+      color: var(--caution);
+      font-size: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    /* Footer */
+    .report-footer {
+      padding: 32px 40px;
+      background: #060913;
+      border-top: 1px solid var(--border-dim);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    
+    .report-footer strong {
+      color: var(--text-dim);
+    }
+    
+    .footer-note {
+      margin-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.03);
+      padding-top: 12px;
+    }
+    
+    /* PDF Print Optimization Override */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #0f172a !important;
+        font-size: 11.5px !important;
+      }
+      
+      .page-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        min-height: auto !important;
+      }
+      
+      .no-print, .action-bar {
+        display: none !important;
+      }
+      
+      .ticker-header {
+        background: #fff !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding: 16px 0 !important;
+      }
+      
+      .ticker-sym {
+        color: #0f172a !important;
+        font-size: 32px !important;
+        text-shadow: none !important;
+      }
+      
+      .ticker-company {
+        color: #64748b !important;
+      }
+      
+      .ticker-stats {
+        border-left: 1px solid #cbd5e1 !important;
+      }
+      
+      .stat-value {
+        color: #0f172a !important;
+      }
+      
+      .main-content {
+        padding: 16px 0 !important;
+      }
+      
+      .cyber-card {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        padding: 16px !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .cyber-card.ai-box {
+        border-left: 4px solid #0f172a !important;
+      }
+      
+      .cyber-card.recommendation-box {
+        border-left: 4px solid #cbd5e1 !important;
+      }
+      
+      .recommendation-title.positive,
+      .recommendation-title.caution,
+      .recommendation-title.negative {
+        color: #0f172a !important;
+      }
+      
+      .score-container {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 16px !important;
+      }
+      
+      .score-circle-cyber {
+        width: 80px !important;
+        height: 80px !important;
+        border: 3px solid #64748b !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+      }
+      
+      .score-circle-cyber::before {
+        display: none !important;
+      }
+      
+      .score-circle-value {
+        color: #0f172a !important;
+        font-size: 24px !important;
+      }
+      
+      .score-circle-grade {
+        color: #64748b !important;
+      }
+      
+      .metric-box {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      
+      .metric-box-value {
+        color: #0f172a !important;
+      }
+      
+      .terminal-table {
+        font-size: 11px !important;
+      }
+      
+      .terminal-table th {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+      }
+      
+      .terminal-table td {
+        color: #334155 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+      }
+      
+      .status-badge {
+        background: none !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+      
+      .signal-led {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+      
+      .balance-stat-row {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      
+      .balance-stat-val {
+        color: #0f172a !important;
+      }
+      
+      .section-header h2 {
+        background: none !important;
+        -webkit-text-fill-color: #0f172a !important;
+        color: #0f172a !important;
+      }
+      
+      .section-header-line {
+        background: #cbd5e1 !important;
+      }
+      
+      .markdown-ai-body h3, 
+      .markdown-ai-body p, 
+      .markdown-ai-body li {
+        color: #0f172a !important;
+      }
+      
+      .report-footer {
+        background: #fff !important;
+        border-top: 1px solid #cbd5e1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Cyber Action Bar -->
+  <div class="action-bar no-print">
+    <div class="logo-container">
+      <div class="logo-glow">AG</div>
+      <div>
+        <div style="font-weight: 800; font-size: 13px; letter-spacing: 0.5px; color: #fff;">FINANCIAL TERMINAL</div>
+        <div class="logo-subtitle">AI Stock Analytics</div>
+      </div>
+    </div>
+    <button class="btn-print" onclick="window.print()">In / Lưu PDF</button>
+  </div>
+
+  <main class="page-container">
+    
+    <!-- Stock Ticker Header -->
+    <header class="ticker-header">
+      <div class="ticker-badge">
+        <span class="ticker-sym">{{ symbol }}</span>
+        <span class="ticker-company">{{ company_name }}</span>
+      </div>
+      <div class="ticker-stats">
+        <div class="stat-box">
+          <span class="stat-label">Giá khớp gần nhất</span>
+          <span class="stat-value">{{ last_price }}</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Xu hướng kỹ thuật</span>
+          <span class="stat-value {% if trend == 'TĂNG' %}trend-up{% elif trend == 'GIẢM' %}trend-down{% else %}trend-sideway{% endif %}">
+            ● {{ trend }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Chấm điểm chung</span>
+          <span class="stat-value" style="color: var(--cyan);">{{ score }}/100</span>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div>Ngày xuất bản</div>
+        <strong>{{ generated_at }}</strong>
+      </div>
+    </header>
+
+    <div class="main-content">
+      
+      <!-- Executive Summary & AI Analysis -->
+      <section class="cyber-section">
+        <div class="section-header">
+          <h2>Tóm tắt điều hành & Nhận định AI</h2>
+          <span class="section-header-line"></span>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-box">
+            <span class="metric-box-label">Thị giá</span>
+            <span class="metric-box-value">{{ last_price }}</span>
+            <span class="metric-box-note">Ngày {{ last_date }}</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-box-label">Độ mạnh RSI</span>
+            <span class="metric-box-value">{{ rsi }}</span>
+            <span class="metric-box-note">Ranh giới 30/70</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-box-label">Định giá P/E</span>
+            <span class="metric-box-value">{{ pe }}</span>
+            <span class="metric-box-note">Hệ số P/E năm</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-box-label">Định giá P/B</span>
+            <span class="metric-box-value">{{ pb }}</span>
+            <span class="metric-box-note">Hệ số P/B năm</span>
+          </div>
+        </div>
+
+        {% if llm_fallback_used %}
+        <div class="system-banner">
+          <span>⚠️</span>
+          <div>Local LLM không phản hồi kịp (Timeout). Báo cáo phân tích này sử dụng bộ xử lý rule-based dự phòng tự động.</div>
+        </div>
+        {% endif %}
+
+        <div class="cyber-card ai-box">
+          <div class="markdown-ai-body">
+            {{ analysis_html | safe }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Technical & Fundamental detailed grid -->
+      <div class="two-col-grid">
+        
+        <!-- Technical Analysis Console -->
+        <section class="cyber-section">
+          <div class="section-header">
+            <h2>Chỉ báo kỹ thuật</h2>
+            <span class="section-header-line"></span>
+          </div>
+          
+          <div class="table-wrapper">
+            <table class="terminal-table">
+              <thead>
+                <tr>
+                  <th>Chỉ số</th>
+                  <th class="number">Giá trị</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in technical_rows %}
+                <tr>
+                  <td>{{ row.name }}</td>
+                  <td class="number">{{ row.value }}</td>
+                  <td>
+                    <span class="status-badge {{ row.status.class }}">
+                      <span class="status-dot"></span>
+                      {{ row.status.text }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+            Hệ thống phát hiện tín hiệu
+          </div>
+          <div class="signal-container">
+            {% if active_signals %}
+              {% for signal in active_signals %}
+              <div class="signal-led {{ signal.class }}">
+                <span style="font-weight: 800;">●</span> {{ signal.name }}: {{ signal.value }}
+              </div>
+              {% endfor %}
+            {% else %}
+              <div style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 8px;">
+                Không có tín hiệu kỹ thuật đặc biệt kích hoạt.
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+        <!-- Fundamental Analysis Console -->
+        <section class="cyber-section">
+          <div class="section-header">
+            <h2>Nền tảng cơ bản</h2>
+            <span class="section-header-line"></span>
+          </div>
+
+          <div class="score-container">
+            <div class="score-circle-cyber">
+              <div class="score-circle-inner">
+                <span class="score-circle-value">{{ score }}</span>
+                <div class="score-circle-grade">Hạng {{ grade }}</div>
+              </div>
+            </div>
+            <div class="score-detail">
+              <div class="stat-label">Tóm tắt xếp hạng</div>
+              <div class="score-summary-txt" style="margin-top: 6px;">{{ score_summary }}</div>
+            </div>
+          </div>
+
+          <div class="cyber-card" style="padding: 16px; background: rgba(6, 9, 19, 0.4); margin-bottom: 0;">
+            <div class="stat-label" style="margin-bottom: 12px;">Cân đối kế toán (Năm {{ balance.year }})</div>
+            <div class="balance-stats-box">
+              <div class="balance-stat-row">
+                <span class="balance-stat-name">Tổng tài sản</span>
+                <span class="balance-stat-val">{{ balance.total_assets }}</span>
+              </div>
+              <div class="balance-stat-row">
+                <span class="balance-stat-name">Vốn chủ sở hữu</span>
+                <span class="balance-stat-val">{{ balance.equity }}</span>
+              </div>
+              <div class="balance-stat-row">
+                <span class="balance-stat-name">Nợ phải trả</span>
+                <span class="balance-stat-val" style="color: var(--caution);">{{ balance.total_debt }}</span>
+              </div>
+              <div class="balance-stat-row">
+                <span class="balance-stat-name">Tiền & tương đương tiền</span>
+                <span class="balance-stat-val" style="color: var(--bullish);">{{ balance.cash }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Historical Indicators -->
+      <section class="cyber-section">
+        <div class="section-header">
+          <h2>Chỉ số tài chính qua các năm</h2>
+          <span class="section-header-line"></span>
+        </div>
+        
+        <div class="table-wrapper">
+          <table class="terminal-table">
+            <thead>
+              <tr>
+                <th>Năm tài chính</th>
+                <th class="number">P/E</th>
+                <th class="number">P/B</th>
+                <th class="number">ROE</th>
+                <th class="number">ROA</th>
+                <th class="number">EPS</th>
+                <th class="number">D/E (lần)</th>
+                <th class="number">Biên ròng</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in ratio_rows %}
+              <tr {% if loop.first %}class="highlight-row"{% endif %}>
+                <td style="font-weight: 700; color: #fff;">{{ row.year }}</td>
+                <td class="number">{{ row.pe }}</td>
+                <td class="number">{{ row.pb }}</td>
+                <td class="number" style="color: var(--bullish);">{{ row.roe }}</td>
+                <td class="number">{{ row.roa }}</td>
+                <td class="number">{{ row.eps }}</td>
+                <td class="number">{{ row.debt_equity }}</td>
+                <td class="number">{{ row.net_margin }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Không có dữ liệu</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Revenue & Income Growth -->
+      <section class="cyber-section">
+        <div class="section-header">
+          <h2>Kết quả kinh doanh & Tăng trưởng quý gần nhất</h2>
+          <span class="section-header-line"></span>
+        </div>
+        
+        <div class="table-wrapper">
+          <table class="terminal-table">
+            <thead>
+              <tr>
+                <th>Kỳ báo cáo</th>
+                <th class="number">Doanh thu thuần</th>
+                <th class="number">Lợi nhuận gộp</th>
+                <th class="number">Lợi nhuận sau thuế</th>
+                <th class="number">Tăng trưởng DT YoY</th>
+                <th class="number">Tăng trưởng LNST YoY</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in income_rows %}
+              <tr {% if loop.first %}class="highlight-row"{% endif %}>
+                <td style="font-weight: 700; color: #fff;">{{ row.period }}</td>
+                <td class="number">{{ row.revenue }}</td>
+                <td class="number">{{ row.gross_profit }}</td>
+                <td class="number">{{ row.net_income }}</td>
+                 <td class="number {% if row.revenue_growth_yoy_raw and row.revenue_growth_yoy_raw > 0 %}trend-up{% elif row.revenue_growth_yoy_raw and row.revenue_growth_yoy_raw < 0 %}trend-down{% endif %}">
+                   {{ row.revenue_growth_yoy }}
+                 </td>
+                 <td class="number {% if row.profit_growth_yoy_raw and row.profit_growth_yoy_raw > 0 %}trend-up{% elif row.profit_growth_yoy_raw and row.profit_growth_yoy_raw < 0 %}trend-down{% endif %}">
+                   {{ row.profit_growth_yoy }}
+                 </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Không có dữ liệu quý gần đây</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Recommendations summary -->
+      <section class="cyber-section">
+        <div class="section-header">
+          <h2>Khuyến nghị hệ thống</h2>
+          <span class="section-header-line"></span>
+        </div>
+        
+        <div class="cyber-card recommendation-box {{ sentiment.class }}">
+          <h3 class="recommendation-title {{ sentiment.class }}">Hành động khuyến nghị: {{ sentiment.label }}</h3>
+          <p style="font-size: 13.5px; color: var(--text-dim); margin: 0; line-height: 1.6;">
+            Luận điểm phân tích chi tiết được tổng hợp tự động từ mô hình học máy dựa trên chuyển động giá gần nhất và dữ liệu báo cáo tài chính đã được kiểm toán. Nhà đầu tư được khuyến nghị kết hợp chiến lược phân bổ tỷ trọng vốn cá nhân và tuân thủ chặt chẽ kế hoạch chặn lỗ (cut loss) khi thị trường thay đổi bất lợi.
+          </p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Tuyên bố miễn trừ trách nhiệm & Footer -->
+    <footer class="report-footer">
+      <div>
+        <strong>Tuyên bố miễn trừ trách nhiệm:</strong> Báo cáo phân tích này được sinh tự động bởi hệ thống AI kết hợp các quy tắc định lượng tài chính. Mọi thông tin cung cấp chỉ mang tính chất nghiên cứu khoa học, thảo luận cá nhân và học thuật. Báo cáo không cấu thành bất kỳ lời khuyến nghị đầu tư tài chính trực tiếp, gián tiếp hay cam kết mức sinh lời nào. Quyết định đầu tư và rủi ro thua lỗ thuộc toàn quyền tự quyết của người sử dụng thông tin.
+      </div>
+      <div class="footer-note">
+        Thiết kế bởi <strong>AG Financial Terminal</strong> • Bản quyền thuộc về AI Stock Analysis Agent.
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

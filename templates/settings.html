@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">SYSTEM</p><h1>Settings & Operations</h1><p>Các lệnh vận hành quan trọng được gom riêng, không dồn vào Dashboard.</p></div></section>
+<div class="two-column">
+<section class="panel"><h2>Screening</h2><pre class="code-block">python batch_collect.py --symbols FPT,VCB,VNM --delay 6
+python batch_collect.py --universe VN30 --delay 10</pre><p>Weights được cấu hình trong <code>config/scoring_config.json</code>.</p></section>
+<section class="panel"><h2>EOD Monitor</h2><pre class="code-block">python -m monitoring.run_eod
+python -m monitoring.scheduler</pre><p>Scheduler mặc định: Thứ 2–Thứ 6 lúc 15:30 Asia/Ho_Chi_Minh.</p></section>
+<section class="panel"><h2>Ollama</h2><pre class="code-block">ollama serve
+ollama list</pre><p>Chatbot dùng Ollama để giải thích context; tín hiệu vẫn do Python Recommendation Engine tạo.</p></section>
+<section class="panel"><h2>Database</h2><p>Mặc định: <code>data/stock_analyze.db</code></p><p>Có thể đổi bằng biến môi trường <code>STOCK_ANALYZE_DB</code>.</p></section>
+</div>
+{% endblock %}

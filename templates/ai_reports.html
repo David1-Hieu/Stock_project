@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">DECISION HISTORY</p><h1>AI Reports</h1><p>Lưu lịch sử Recommendation Engine để có thể đối chiếu kết quả sau này.</p></div></section>
+<section class="panel"><div id="reportList" class="list-stack loading-text">Đang tải...</div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/reports_page.js') }}"></script>{% endblock %}

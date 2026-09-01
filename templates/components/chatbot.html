@@ -1,0 +1,14 @@
+<button id="chatBubble" class="chat-bubble" type="button" aria-label="Mở AI Assistant" aria-controls="chatPanel" aria-expanded="false">AI</button>
+<section id="chatPanel" class="chat-panel" hidden aria-hidden="true">
+  <div class="chat-head">
+    <div><strong>AI Investment Assistant</strong><small>Ollama · Context-aware</small></div>
+    <button id="chatClose" class="icon-button" type="button" aria-label="Đóng chatbot">×</button>
+  </div>
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-msg assistant">Tôi có thể đọc context của trang hiện tại, Watchlist, Portfolio và Recommendation Engine để giải thích kết quả.</div>
+  </div>
+  <form id="chatForm" class="chat-form">
+    <textarea id="chatInput" rows="2" placeholder="Ví dụ: Mã này đang mạnh hay yếu so với VNIndex?"></textarea>
+    <button type="submit">Gửi</button>
+  </form>
+</section>

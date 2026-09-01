@@ -1,0 +1,20 @@
+# Core web app
+flask==3.0.3
+requests>=2.31.0
+
+# Vietnam stock data
+vnstock>=4.0.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+pandas-ta>=0.3.14b
+
+# Report rendering
+jinja2>=3.1.0
+markdown>=3.5.0
+weasyprint>=60.0
+
+# Logging
+concurrent-log-handler>=0.9.25
+APScheduler>=3.10,<4

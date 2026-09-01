@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Intelligence - Dashboard phân tích cổ phiếu Việt Nam</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <!-- Background grid decoration -->
+    <div class="grid-overlay"></div>
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+
+    <!-- Header Section -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <div class="brand-text">
+                    <h1>AI Stock Intelligence</h1>
+                    <p class="subtitle">Phân tích cổ phiếu Việt Nam bằng dữ liệu, AI Agent và Ollama local</p>
+                </div>
+            </div>
+            <div class="badges-container">
+                <span class="badge tech-badge bg-cyan-glow">Local AI</span>
+                <span class="badge tech-badge bg-green-glow">VNStock</span>
+                <span class="badge tech-badge bg-purple-glow">Flask</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="dashboard-content">
+        <!-- Toast Notification Area -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Top Widgets Row -->
+        <div class="grid-2-cols">
+            <!-- Ollama / AI Status Card -->
+            <section class="card glass-card">
+                <div class="card-header">
+                    <div class="header-title">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon-primary"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        <h2>Trạng thái Ollama AI</h2>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btn-check-status" onclick="checkOllamaStatus()">
+                        <span>Kiểm tra Ollama</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="status-indicator-wrapper" id="ollama-status-block">
+                        <div class="status-badge-container">
+                            <span class="pulse-dot status-offline-dot" id="ollama-dot"></span>
+                            <span class="status-text" id="ollama-text">Chưa kiểm tra</span>
+                        </div>
+                        <div class="status-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Model gợi ý:</span>
+                                <span class="detail-value text-cyan" id="ollama-recommended">llama3.2</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Base URL:</span>
+                                <span class="detail-value text-muted" id="ollama-url">http://localhost:11434</span>
+                            </div>
+                            <div class="detail-row flex-col">
+                                <span class="detail-label">Model khả dụng:</span>
+                                <div class="model-tags-container" id="ollama-models-list">
+                                    <span class="no-models text-muted">Chưa có thông tin</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Symbol Input Panel -->
+            <section class="card glass-card">
+                <div class="card-header">
+                    <div class="header-title">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon-primary"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                        <h2>Phân tích & Báo cáo cổ phiếu</h2>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="input-form">
+                        <div class="input-group">
+                            <input type="text" id="symbolInput" class="form-input" value="FPT" placeholder="Nhập mã cổ phiếu: FPT, VCB, VNM..." onkeyup="handleInputKeyUp(event)">
+                            <div class="input-hint">Nhập mã (FPT, VCB, VNM...) và chọn phương thức phân tích</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="btn-analyze-full" onclick="analyzeSymbol('full')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                <span>Phân tích AI</span>
+                            </button>
+                            <button class="btn btn-info" id="btn-analyze-tech" onclick="analyzeSymbol('technical')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                <span>Kỹ thuật</span>
+                            </button>
+                            <button class="btn btn-warning" id="btn-analyze-fund" onclick="analyzeSymbol('fundamental')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span>Cơ bản</span>
+                            </button>
+                            <button class="btn btn-danger" id="btn-report" onclick="createSymbolReport()">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <span>Tạo báo cáo HTML</span>
+                            </button>
+                        </div>
+                        <div class="report-result-link hidden" id="report-link-container">
+                            <span class="report-link-text">✅ Đã tạo báo cáo thành công!</span>
+                            <a href="#" id="btn-open-report" target="_blank" class="btn btn-success btn-sm">
+                                <span>Mở báo cáo</span>
+                                <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Ranking Table Card -->
+        <section class="card glass-card margin-top">
+            <div class="card-header">
+                <div class="header-title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon-primary"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    <h2>Bảng xếp hạng cổ phiếu mới nhất (Screening)</h2>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-load-screening" onclick="loadScreeningData()">
+                    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <span>Tải ranking mới nhất</span>
+                </button>
+            </div>
+            <div class="card-body no-padding">
+                <div class="table-responsive">
+                    <table class="ranking-table" id="screening-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Mã CP</th>
+                                <th>Điểm lọc</th>
+                                <th>Giá gần nhất</th>
+                                <th>Xu hướng</th>
+                                <th>RSI(14)</th>
+                                <th>P/E</th>
+                                <th>P/B</th>
+                                <th>ROE</th>
+                                <th>Xếp hạng</th>
+                                <th>Tín hiệu kỹ thuật</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="screening-table-body">
+                            <tr>
+                                <td colspan="12" class="text-center text-muted py-5">
+                                    Chưa tải dữ liệu. Nhấn "Tải ranking mới nhất" để lấy thông tin.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer-info hidden" id="screening-meta">
+                    <span class="text-muted" id="screening-file-info"></span>
+                    <span class="text-muted" id="screening-time-info"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Results Card -->
+        <section class="card glass-card margin-top" id="analysis-results-section">
+            <div class="card-header border-bottom">
+                <div class="header-title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <h2>Kết quả phân tích: <span id="current-analyzed-symbol" class="text-cyan">Chưa chọn mã</span></h2>
+                </div>
+                <div class="analysis-meta-info text-muted" id="analysis-meta-time"></div>
+            </div>
+            
+            <!-- Result Tabs -->
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchTab(event, 'tab-overview')">📊 Tổng quan & AI</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-technical')">📈 Phân tích kỹ thuật</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-fundamental')">🏢 Phân tích cơ bản</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-json')">⚙️ Xem JSON gốc</button>
+            </div>
+
+            <div class="card-body">
+                <!-- Skeletons for Loading States -->
+                <div id="analysis-loading" class="hidden">
+                    <div class="skeleton-container">
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="skeleton skeleton-paragraph-1"></div>
+                        <div class="skeleton skeleton-paragraph-2"></div>
+                        <div class="skeleton skeleton-paragraph-3"></div>
+                        <div class="skeleton skeleton-table"></div>
+                    </div>
+                </div>
+
+                <!-- Initial State Message -->
+                <div id="analysis-initial-msg" class="text-center text-muted py-5">
+                    Hãy nhập mã cổ phiếu ở trên và chọn một phương thức phân tích để xem kết quả.
+                </div>
+
+                <!-- Tab Contents -->
+                <div id="tab-content-wrapper" class="hidden">
+                    
+                    <!-- Tab Overview & AI -->
+                    <div id="tab-overview" class="tab-content active-content">
+                        <div class="summary-cards-grid">
+                            <div class="summary-card">
+                                <span class="label">Mã Cổ Phiếu</span>
+                                <span class="value symbol-highlight" id="overview-symbol">FPT</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Điểm số (Fundamentals)</span>
+                                <span class="value text-cyan" id="overview-score">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Xếp hạng (Grade)</span>
+                                <span class="value" id="overview-grade">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Xu hướng chính</span>
+                                <span class="value" id="overview-trend">N/A</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-commentary-box margin-top">
+                            <div class="ai-box-title">
+                                <span class="ai-pulse"></span>
+                                <h3>🤖 Nhận định của AI Agent (Ollama Local)</h3>
+                            </div>
+                            <div class="ai-content-html" id="overview-ai-commentary">
+                                Đang tải hoặc chưa có phân tích.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Technical Indicators -->
+                    <div id="tab-technical" class="tab-content">
+                        <div class="summary-cards-grid">
+                            <div class="summary-card">
+                                <span class="label">Giá gần nhất</span>
+                                <span class="value text-white" id="tech-last-price">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Ngày dữ liệu</span>
+                                <span class="value" id="tech-last-date">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">RSI(14)</span>
+                                <span class="value" id="tech-rsi">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">MACD</span>
+                                <span class="value" id="tech-macd">N/A</span>
+                            </div>
+                        </div>
+
+                        <div class="grid-2-cols margin-top">
+                            <div>
+                                <h3 class="section-title">Chỉ số xu hướng và Động lượng</h3>
+                                <table class="technical-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>EMA20</td>
+                                            <td id="tech-ema20">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>EMA50</td>
+                                            <td id="tech-ema50">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>EMA200</td>
+                                            <td id="tech-ema200">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bollinger Upper</td>
+                                            <td id="tech-bb-upper">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bollinger Lower</td>
+                                            <td id="tech-bb-lower">N/A</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <h3 class="section-title">Tín hiệu kích hoạt hiện tại</h3>
+                                <div class="signals-container" id="tech-signals-tags">
+                                    <span class="text-muted">Không có tín hiệu active nào hoặc chưa phân tích.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-commentary-box margin-top" id="tech-ai-box">
+                            <div class="ai-box-title">
+                                <span class="ai-pulse"></span>
+                                <h3>📊 Nhận định kỹ thuật của AI Agent</h3>
+                            </div>
+                            <div class="ai-content-html" id="tech-ai-commentary">
+                                Chưa có phân tích kỹ thuật từ LLM.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Fundamental Indicators -->
+                    <div id="tab-fundamental" class="tab-content">
+                        <div class="summary-cards-grid">
+                            <div class="summary-card">
+                                <span class="label">P/E</span>
+                                <span class="value text-white" id="fund-pe">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">P/B</span>
+                                <span class="value text-white" id="fund-pb">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">ROE</span>
+                                <span class="value" id="fund-roe">N/A</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">ROA</span>
+                                <span class="value" id="fund-roa">N/A</span>
+                            </div>
+                        </div>
+
+                        <div class="grid-2-cols margin-top">
+                            <div>
+                                <h3 class="section-title">Chỉ số tài chính khác</h3>
+                                <table class="fundamental-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>EPS gần nhất</td>
+                                            <td id="fund-eps">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nợ trên vốn chủ sở hữu (D/E)</td>
+                                            <td id="fund-debt-equity">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Điểm cơ bản hệ thống</td>
+                                            <td id="fund-score-val">N/A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Xếp hạng cơ bản</td>
+                                            <td id="fund-grade-val">N/A</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="fund-summary-desc-box">
+                                <h3 class="section-title">Đánh giá cơ bản hệ thống</h3>
+                                <div class="summary-desc-content" id="fund-score-summary">
+                                    Chưa có đánh giá cơ bản chi tiết.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-commentary-box margin-top" id="fund-ai-box">
+                            <div class="ai-box-title">
+                                <span class="ai-pulse"></span>
+                                <h3>🏢 Nhận định cơ bản của AI Agent</h3>
+                            </div>
+                            <div class="ai-content-html" id="fund-ai-commentary">
+                                Chưa có phân tích cơ bản từ LLM.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Raw JSON -->
+                    <div id="tab-json" class="tab-content">
+                        <p class="text-muted margin-bottom-sm">Dữ liệu thô JSON trả về từ API phục vụ cho lập trình viên gỡ lỗi và kiểm tra.</p>
+                        <pre class="raw-json-block"><code id="raw-json-output">{}</code></pre>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>© 2026 AI Stock Intelligence. Phát triển trên nền tảng Flask, Ollama & Python VNStock.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
