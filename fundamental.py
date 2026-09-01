@@ -4,7 +4,7 @@ Module phân tích cơ bản cho dự án AI Agent chứng khoán Việt Nam.
 Chức năng chính:
 - Lấy và chuẩn hoá báo cáo tài chính từ vnstock.
 - Trích xuất P/E, P/B, ROE, ROA, EPS, Debt/Equity, biên lợi nhuận.
-- Đọc kết quả kinh doanh, bảng cân đối kế toán.
+- Đọc kết quả kinh doanh, bảng cân đối kế toán và lưu chuyển tiền tệ.
 - Tính điểm sức khoẻ tài chính 0-100.
 
 Lưu ý:
@@ -26,6 +26,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 
+from services.fundamental_data_service import load_finance_table as _service_load_finance_table
 # =========================
 # Cấu hình chung
 # =========================
@@ -582,10 +583,8 @@ def _get_finance_object(symbol: str, source: str = "KBS") -> Any:
 
 def _load_finance_table(symbol: str, table_type: str, period: str, lang: str = "vi") -> pd.DataFrame:
     """
-    Lấy bảng tài chính từ nhiều source fallback.
-
-    Hàm này có cache trong memory để tránh gọi lặp lại vnstock trong cùng một lần chạy.
-    Điều này đặc biệt quan trọng với bản cộng đồng vì dễ chạm giới hạn request/phút.
+    Data access adapter: ưu tiên vnstock_data, fallback vnstock community.
+    Parser/normalizer hiện có của project vẫn được giữ để không phá scoring/UI.
     """
     symbol = symbol.upper().strip()
     cache_key = (symbol, table_type, period, lang)
@@ -593,41 +592,18 @@ def _load_finance_table(symbol: str, table_type: str, period: str, lang: str = "
         logger.info("Dùng cache %s %s period=%s", table_type, symbol, period)
         return _FINANCE_TABLE_CACHE[cache_key].copy()
 
-    method_map = {
-        "ratio": ["ratio", "ratios"],
-        "income": ["income_statement", "income", "income_statement_report"],
-        "balance": ["balance_sheet", "balance", "balance_sheet_report", "balance_sheet_statement"],
-    }
-    methods = method_map.get(table_type)
-    if not methods:
-        raise ValueError(f"table_type không hợp lệ: {table_type}")
-
-    # KBS thường ổn cho ratio/income; balance trong môi trường test của bạn thành công ở VCI.
-    if table_type == "balance":
-        source_order = ["VCI", "KBS", "TCBS"]
-    else:
-        source_order = DEFAULT_FINANCE_SOURCES
-
-    errors: List[str] = []
-    for source in source_order:
-        try:
-            logger.info("Đang lấy %s %s từ nguồn %s", table_type, symbol, source)
-            finance = _get_finance_object(symbol=symbol, source=source)
-            df = _call_finance_method(finance, methods, period=period, lang=lang)
-            df = _standardize_finance_table(df, table_type=table_type)
-            df = _sort_by_period_desc(df)
-            logger.info("Lấy %s %s thành công từ %s: %s dòng, %s cột", table_type, symbol, source, len(df), len(df.columns))
-            _FINANCE_TABLE_CACHE[cache_key] = df.copy()
-            return df.copy()
-        except Exception as exc:
-            message = f"{source}: {type(exc).__name__}: {exc}"
-            errors.append(message)
-            logger.exception("Lỗi khi lấy %s %s từ %s", table_type, symbol, source)
-
-    logger.error("Không thể lấy %s cho %s. Chi tiết: %s", table_type, symbol, " | ".join(errors))
-    empty_df = pd.DataFrame()
-    _FINANCE_TABLE_CACHE[cache_key] = empty_df.copy()
-    return empty_df
+    try:
+        raw_df = _service_load_finance_table(symbol, table_type, period, lang)
+        df = _flatten_columns(raw_df)
+        df = _standardize_finance_table(df, table_type=table_type)
+        df = _sort_by_period_desc(df)
+        _FINANCE_TABLE_CACHE[cache_key] = df.copy()
+        return df.copy()
+    except Exception as exc:
+        logger.exception("Không thể lấy %s cho %s qua FundamentalDataService: %s", table_type, symbol, exc)
+        empty_df = pd.DataFrame()
+        _FINANCE_TABLE_CACHE[cache_key] = empty_df.copy()
+        return empty_df
 
 
 def _extract_value(row: pd.Series, df: pd.DataFrame, aliases: Iterable[str], percent: bool = False) -> Optional[float]:
@@ -930,6 +906,61 @@ def get_balance_sheet(symbol: str) -> Dict[str, Any]:
     }
 
 
+
+def get_cash_flow_statement(symbol: str, periods: int = 4) -> List[Dict[str, Any]]:
+    """Lấy lưu chuyển tiền tệ theo quý, mới nhất trước.
+
+    Không đưa cash-flow vào fundamental score ở bước nâng cấp này để tránh thay đổi
+    hành vi scoring hiện tại. Dữ liệu được thêm vào summary/API trước, sau đó có thể
+    mở rộng score bằng CFO quality/FCF ở một migration riêng.
+    """
+    symbol = symbol.upper().strip()
+    df = _load_finance_table(symbol=symbol, table_type="cash_flow", period="quarter", lang="vi")
+    if df.empty:
+        return []
+
+    period_col = _get_period_column(df)
+    cfo_col = _find_metric_column(df, [
+        "CF_NET_CASH_FROM_OPERATING_ACTIVITIES", "net_cash_from_operating_activities",
+        "cash_flow_from_operating_activities", "operating_cash_flow", "cfo",
+        "luu_chuyen_tien_thuan_tu_hoat_dong_kinh_doanh", "tien_thuan_tu_hoat_dong_kinh_doanh",
+    ])
+    cfi_col = _find_metric_column(df, [
+        "CF_NET_CASH_FROM_INVESTING_ACTIVITIES", "net_cash_from_investing_activities",
+        "cash_flow_from_investing_activities", "investing_cash_flow", "cfi",
+        "luu_chuyen_tien_thuan_tu_hoat_dong_dau_tu",
+    ])
+    cff_col = _find_metric_column(df, [
+        "CF_NET_CASH_FROM_FINANCING_ACTIVITIES", "net_cash_from_financing_activities",
+        "cash_flow_from_financing_activities", "financing_cash_flow", "cff",
+        "luu_chuyen_tien_thuan_tu_hoat_dong_tai_chinh",
+    ])
+    capex_col = _find_metric_column(df, [
+        "CF_PURCHASE_OF_FIXED_ASSETS", "CF_PURCHASE_FIXED_ASSETS",
+        "purchase_of_fixed_assets", "purchase_of_property_plant_equipment",
+        "capital_expenditure", "capex", "tien_chi_mua_sam_xay_dung_tscd",
+    ])
+
+    results: List[Dict[str, Any]] = []
+    for position, (_, row) in enumerate(df.head(max(1, int(periods))).iterrows(), start=1):
+        cfo = _round_or_none(row.get(cfo_col)) if cfo_col else None
+        cfi = _round_or_none(row.get(cfi_col)) if cfi_col else None
+        cff = _round_or_none(row.get(cff_col)) if cff_col else None
+        capex = _round_or_none(row.get(capex_col)) if capex_col else None
+        fcf = None
+        if cfo is not None and capex is not None:
+            # CAPEX thường âm trong CFS. Nếu provider trả số dương, coi đó là giá trị chi ra.
+            fcf = round(cfo + capex, 2) if capex < 0 else round(cfo - capex, 2)
+        results.append({
+            "period": _format_period(row.get(period_col), fallback_index=position) if period_col else f"Kỳ {position}",
+            "cfo": cfo,
+            "cfi": cfi,
+            "cff": cff,
+            "capex": capex,
+            "free_cash_flow": fcf,
+        })
+    return results
+
 def score_fundamentals(
     symbol: str,
     ratios: Optional[List[Dict[str, Any]]] = None,
@@ -1065,7 +1096,7 @@ def get_fundamental_summary(symbol: str) -> Dict[str, Any]:
     """
     Tổng hợp toàn bộ dữ liệu cơ bản thành một dict lớn để truyền vào LLM.
 
-    Trả về {symbol, ratios, income, balance, score, generated_at}.
+    Trả về {symbol, ratios, income, balance, cash_flow, score, generated_at}.
     Các số tiền lớn được bổ sung bản format string để LLM/dashboard đọc dễ hơn.
     """
     symbol = symbol.upper().strip()
@@ -1087,6 +1118,12 @@ def get_fundamental_summary(symbol: str) -> Dict[str, Any]:
     except Exception as exc:
         logger.exception("Lỗi khi lấy balance sheet cho %s: %s", symbol, exc)
         balance = {"year": None, "total_assets": None, "total_debt": None, "equity": None, "cash": None}
+
+    try:
+        cash_flow = get_cash_flow_statement(symbol, periods=4)
+    except Exception as exc:
+        logger.exception("Lỗi khi lấy cash flow cho %s: %s", symbol, exc)
+        cash_flow = []
 
     try:
         score = score_fundamentals(symbol, ratios=ratios, income=income, balance=balance)
@@ -1111,11 +1148,19 @@ def get_fundamental_summary(symbol: str) -> Dict[str, Any]:
     for key in ["total_assets", "total_debt", "equity", "cash"]:
         formatted_balance[f"{key}_formatted"] = _format_money_value(balance.get(key))
 
+    formatted_cash_flow: List[Dict[str, Any]] = []
+    for item in cash_flow:
+        formatted = dict(item)
+        for key in ["cfo", "cfi", "cff", "capex", "free_cash_flow"]:
+            formatted[f"{key}_formatted"] = _format_money_value(item.get(key))
+        formatted_cash_flow.append(formatted)
+
     return {
         "symbol": symbol,
         "ratios": ratios,
         "income": formatted_income,
         "balance": formatted_balance,
+        "cash_flow": formatted_cash_flow,
         "score": score,
         "generated_at": _now_iso(),
     }
@@ -1124,3 +1169,24 @@ def get_fundamental_summary(symbol: str) -> Dict[str, Any]:
 if __name__ == "__main__":
     summary = get_fundamental_summary("VCB")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+# >>> SAFE_DERIVED_FINANCIAL_METRICS >>>
+# Adds formula-derived values without changing existing statement structures.
+try:
+    from services.derived_financial_metrics_safe import (
+        enrich_fundamental_summary_safe as _enrich_fundamental_summary_safe,
+    )
+
+    _get_fundamental_summary_before_safe_derived = get_fundamental_summary
+
+    def get_fundamental_summary(*args, **kwargs):
+        _summary = _get_fundamental_summary_before_safe_derived(*args, **kwargs)
+        return _enrich_fundamental_summary_safe(_summary)
+
+except Exception as _safe_derived_import_error:
+    import logging as _safe_derived_logging
+    _safe_derived_logging.getLogger(__name__).warning(
+        "Safe derived metrics unavailable: %s",
+        _safe_derived_import_error,
+    )
+# <<< SAFE_DERIVED_FINANCIAL_METRICS <<<

@@ -18,3 +18,6 @@ weasyprint>=60.0
 # Logging
 concurrent-log-handler>=0.9.25
 APScheduler>=3.10,<4
+
+python-dotenv>=1.0.0
+dnse-sdk-openapi>=1.4.6

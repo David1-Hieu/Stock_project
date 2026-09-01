@@ -23,6 +23,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
+from services.reference_service import get_index_members
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -105,6 +106,9 @@ def get_universe(name: str) -> List[str]:
     key = str(name).strip().upper()
     if key not in UNIVERSES:
         raise ValueError(f"Không có universe '{name}'. Các lựa chọn: {', '.join(sorted(UNIVERSES))}")
+    if key == "VN30":
+        # Dynamic first; giữ list hiện tại làm fallback nếu provider/reference lỗi.
+        return get_index_members("VN30", fallback=list(UNIVERSES[key]))
     return list(UNIVERSES[key])
 
 

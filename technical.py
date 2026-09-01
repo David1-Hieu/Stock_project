@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 
+from services.market_data_service import get_market_data_service
 # =========================
 # Cấu hình chung
 # =========================
@@ -193,57 +194,13 @@ def _cross_down(series_a: pd.Series, series_b: pd.Series, lookback: int = 1) -> 
 # =========================
 def load_ohlcv(symbol: str, days: int = 180) -> pd.DataFrame:
     """
-    Lấy dữ liệu OHLCV lịch sử cho một mã chứng khoán Việt Nam.
+    Lấy OHLCV qua MarketDataService.
 
-    Hàm dùng vnstock với thứ tự nguồn ưu tiên: VCI -> TCBS -> KBS.
-    Kết quả trả về DataFrame đã chuẩn hoá gồm các cột:
-    date, open, high, low, close, volume.
-
-    Args:
-        symbol: Mã cổ phiếu, ví dụ 'VNM', 'FPT', 'VCB'.
-        days: Số phiên gần nhất cần lấy.
-
-    Returns:
-        DataFrame OHLCV đã chuẩn hoá.
-
-    Raises:
-        ValueError: Nếu tất cả nguồn dữ liệu đều lỗi hoặc không có dữ liệu hợp lệ.
+    Thứ tự mặc định: DNSE OpenAPI -> Vnstock fallback. Nếu chưa cấu hình DNSE
+    thì service tự bỏ qua DNSE và dùng Vnstock, vì vậy các flow cũ vẫn chạy.
     """
-    if not symbol or not str(symbol).strip():
-        raise ValueError("symbol không được để trống")
-
-    symbol = str(symbol).strip().upper()
-    days = max(int(days), 30)
-
-    end_date = datetime.now(VN_TZ).date()
-    # Lấy dư lịch ngày vì thị trường không giao dịch cuối tuần/ngày lễ.
-    calendar_days = max(days * 3, days + 60)
-    start_date = end_date - timedelta(days=calendar_days)
-
-    errors: List[str] = []
-
-    for source in DEFAULT_SOURCES:
-        try:
-            logger.info("Đang lấy OHLCV %s từ nguồn %s", symbol, source)
-            quote = _get_vnstock_quote(symbol=symbol, source=source)
-            raw_df = quote.history(
-                start=start_date.strftime("%Y-%m-%d"),
-                end=end_date.strftime("%Y-%m-%d"),
-                interval="1D",
-            )
-            df = _standardize_ohlcv(raw_df, source=source)
-            df = df.tail(days).reset_index(drop=True)
-            logger.info("Lấy OHLCV %s thành công từ %s: %s dòng", symbol, source, len(df))
-            return df
-        except Exception as exc:
-            message = f"{source}: {type(exc).__name__}: {exc}"
-            logger.exception("Lỗi khi lấy OHLCV %s từ %s", symbol, source)
-            errors.append(message)
-
-    raise ValueError(
-        f"Không thể lấy dữ liệu OHLCV cho {symbol} từ các nguồn {DEFAULT_SOURCES}. "
-        f"Chi tiết lỗi: {' | '.join(errors)}"
-    )
+    service = get_market_data_service()
+    return service.get_ohlcv(symbol=symbol, days=days, interval="1D")
 
 
 def compute_indicators(df: pd.DataFrame) -> pd.DataFrame:
