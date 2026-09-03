@@ -60,11 +60,11 @@ upgrade_backups/
 *.temp
 
 # Environment variables & secrets
-.env
 .env.local
 .env.*.local
-*.env
+!.env
 !.env.example
+
 
 # IDEs and Editors
 .vscode/

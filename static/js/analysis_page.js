@@ -122,7 +122,6 @@
     const r=(f.ratios||[])[0]||{};
     const score=f.score||{};
     const b=f.balance||{};
-    const breakdown=score.breakdown||{};
     return `
       <div class="analysis-section-head"><div><p class="eyebrow">FUNDAMENTAL ANALYSIS</p><h2>Phân tích cơ bản</h2></div><div>${pill(`Grade ${score.grade||'N/A'}`,scoreTone(score.score))}</div></div>
       <div class="data-grid analysis-kpi-grid">
@@ -135,17 +134,13 @@
         ${dataCell('Net Margin', pct(r.net_margin),'Biên lợi nhuận ròng')}
         ${dataCell('Điểm cơ bản', `${num(score.score,0)}/100`, esc(score.grade||'N/A'))}
       </div>
-      <section class="analysis-summary-box"><h3>Đánh giá cơ bản của hệ thống</h3><p>${esc(score.summary_vi||'Chưa có đánh giá cơ bản chi tiết.')}</p></section>
-      <div class="analysis-two-col">
-        <section class="analysis-subpanel"><h3>Bảng cân đối kế toán</h3><table class="analysis-table"><tbody>
+      <section class="analysis-subpanel"><h3>Bảng cân đối kế toán</h3><table class="analysis-table"><tbody>
           <tr><td>Năm / kỳ</td><td>${esc(b.year||'N/A')}</td></tr>
           <tr><td>Tổng tài sản</td><td>${esc(money(b.total_assets,b.total_assets_formatted))}</td></tr>
           <tr><td>Tổng nợ</td><td>${esc(money(b.total_debt,b.total_debt_formatted))}</td></tr>
           <tr><td>Vốn chủ sở hữu</td><td>${esc(money(b.equity,b.equity_formatted))}</td></tr>
           <tr><td>Tiền & tương đương tiền</td><td>${esc(money(b.cash,b.cash_formatted))}</td></tr>
         </tbody></table></section>
-        <section class="analysis-subpanel"><h3>Breakdown điểm cơ bản</h3><div class="breakdown-list">${Object.entries(breakdown).length?Object.entries(breakdown).map(([k,v])=>`<div><span>${esc(k.replaceAll('_',' '))}</span><strong>${num(v,0)}</strong></div>`).join(''):'<div class="empty-state">Chưa có breakdown.</div>'}</div></section>
-      </div>
       <section class="analysis-subpanel"><h3>Kết quả kinh doanh các kỳ gần nhất</h3>${renderIncomeTable(f.income||[])}</section>`;
   }
 
